@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TaskForge — C++ scheduler in your browser</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
+      :root {
+        --ink: #0a0e14;
+        --panel: #121821;
+        --line: #1f2a38;
+        --amber: #ffb454;
+        --cyan: #59c2ff;
+        --green: #7fd962;
+        --red: #ff5c7a;
+        --violet: #b48ead;
+        --muted: #6b7889;
+        --text: #d7dfea;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--ink);
+        color: var(--text);
+        font-family: "JetBrains Mono", monospace;
+        padding: 24px;
+      }
+      h1,
+      h2,
+      h3 {
+        font-family: "Space Grotesk", sans-serif;
+      }
+      .wrap {
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+      header {
+        display: flex;
+        align-items: baseline;
+        gap: 14px;
+        margin-bottom: 4px;
+      }
+      header h1 {
+        color: var(--amber);
+        letter-spacing: 0.02em;
+      }
+      .sub {
+        color: var(--muted);
+        font-size: 0.82rem;
+        margin-bottom: 22px;
+      }
+      .badge {
+        display: inline-block;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-left: 3px solid var(--cyan);
+        border-radius: 3px;
+        padding: 2px 8px;
+        font-size: 0.7rem;
+        color: var(--cyan);
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 340px 1fr;
+        gap: 18px;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 18px;
+      }
+      .card h3 {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+        margin-bottom: 14px;
+      }
+      label {
+        display: block;
+        font-size: 0.72rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin: 10px 0 4px;
+      }
+      input,
+      select,
+      textarea {
+        width: 100%;
+        background: var(--ink);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        color: var(--text);
+        padding: 8px 10px;
+        font-family: inherit;
+        font-size: 0.85rem;
+      }
+      textarea {
+        resize: vertical;
+        min-height: 48px;
+      }
+      button {
+        font-family: "Space Grotesk", sans-serif;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        color: var(--text);
+        border-radius: 4px;
+        padding: 8px 14px;
+        cursor: pointer;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-size: 0.76rem;
+        transition: 0.15s;
+      }
+      button:hover {
+        border-color: var(--amber);
+        color: var(--amber);
+      }
+      button:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+      }
+      button.primary {
+        background: var(--amber);
+        color: var(--ink);
+        border-color: var(--amber);
+        font-weight: 600;
+      }
+      button.primary:hover {
+        filter: brightness(1.1);
+        color: var(--ink);
+      }
+      .toolbar {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+      }
+      .next-banner {
+        background: linear-gradient(
+          90deg,
+          rgba(255, 180, 84, 0.12),
+          transparent
+        );
+        border: 1px solid var(--line);
+        border-left: 3px solid var(--amber);
+        border-radius: 5px;
+        padding: 14px 16px;
+        margin-bottom: 16px;
+      }
+      .next-banner .k {
+        font-size: 0.68rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+      }
+      .next-banner .v {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 1.3rem;
+        color: var(--amber);
+      }
+      .next-banner .empty {
+        color: var(--muted);
+        font-size: 1rem;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.82rem;
+      }
+      th {
+        text-align: left;
+        color: var(--muted);
+        font-size: 0.68rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--line);
+      }
+      td {
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--line);
+      }
+      tr:hover td {
+        background: rgba(89, 194, 255, 0.04);
+      }
+      .pri {
+        font-weight: 700;
+      }
+      .st {
+        font-size: 0.68rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 2px 8px;
+        border-radius: 10px;
+        border: 1px solid;
+      }
+      .st.pending {
+        color: var(--muted);
+        border-color: var(--muted);
+      }
+      .st.in_progress {
+        color: var(--cyan);
+        border-color: var(--cyan);
+      }
+      .st.completed {
+        color: var(--green);
+        border-color: var(--green);
+      }
+      .row-actions button {
+        padding: 4px 8px;
+        font-size: 0.66rem;
+      }
+      .filters {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 12px;
+      }
+      .filters button.active {
+        border-color: var(--amber);
+        color: var(--amber);
+      }
+      .loading {
+        color: var(--muted);
+        padding: 40px;
+        text-align: center;
+      }
+      .empty-tasks {
+        color: var(--muted);
+        text-align: center;
+        padding: 30px;
+        font-size: 0.85rem;
+      }
+      footer {
+        margin-top: 22px;
+        color: var(--muted);
+        font-size: 0.72rem;
+        line-height: 1.6;
+      }
+      code {
+        color: var(--cyan);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1>⚙ TaskForge</h1>
+        <span class="badge">C++ · WebAssembly</span>
+      </header>
+      <div class="sub">
+        A priority task scheduler whose engine — heap, hash map, undo/redo
+        stacks — is real C++ compiled to WebAssembly and running in this tab.
+        The JavaScript only draws; every decision is made in C++.
+      </div>
+
+      <div id="app" class="loading">Loading the C++ engine (WASM)…</div>
+
+      <template id="main-template">
+        <div class="next-banner">
+          <div class="k">Next up (highest priority, heap top)</div>
+          <div id="nextTask" class="v empty">—</div>
+        </div>
+
+        <div class="grid">
+          <div class="card">
+            <h3>Add / Edit Task</h3>
+            <input type="hidden" id="editId" value="" />
+            <label>Name</label>
+            <input id="fName" placeholder="Write POSTECH SOP" />
+            <label>Description</label>
+            <textarea
+              id="fDesc"
+              placeholder="Final draft, 650 words"
+            ></textarea>
+            <label>Priority (1–10)</label>
+            <input id="fPriority" type="number" min="1" max="10" value="5" />
+            <label>Status</label>
+            <select id="fStatus">
+              <option value="0">Pending</option>
+              <option value="1">In progress</option>
+              <option value="2">Completed</option>
+            </select>
+            <div style="margin-top: 16px; display: flex; gap: 8px">
+              <button class="primary" id="submitBtn">Add task</button>
+              <button id="cancelEdit" style="display: none">Cancel</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="toolbar">
+              <button id="undoBtn">↺ undo</button>
+              <button id="redoBtn">redo↷</button>
+              <button id="saveBtn">save</button>
+              <button id="loadBtn">load</button>
+              <span style="flex: 1"></span>
+              <span
+                id="count"
+                style="
+                  color: var(--muted);
+                  font-size: 0.76rem;
+                  align-self: center;
+                "
+              ></span>
+            </div>
+            <div class="filters">
+              <button data-f="all" class="active">All</button>
+              <button data-f="pending">Pending</button>
+              <button data-f="in_progress">In progress</button>
+              <button data-f="completed">Completed</button>
+            </div>
+            <div id="tableHost"></div>
+          </div>
+        </div>
+
+        <footer>
+          Persistence uses your browser's localStorage — tasks survive refresh,
+          and the C++ engine rebuilds its heap and hash map from the saved rows
+          on load. Nothing leaves your machine.<br />
+          Built by compiling C++ with <code>emcc</code> to WebAssembly and
+          binding the <code>Scheduler</code> class to JavaScript via Embind.
+        </footer>
+      </template>
+    </div>
+
+    <script src="scheduler.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
